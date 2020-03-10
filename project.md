@@ -3,13 +3,35 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-10 08:35:43
+ * @LastEditTime: 2020-03-10 20:09:27
  -->
 
 ## react hooks
 
+### 类组件不足
+
+#### 状态逻辑复用难
+- 缺少复用机制
+- 渲染属性和高阶组件导致层级冗余
+#### 状态逻辑复用难
+- 缺少复用机制
+- 渲染属性和高阶组件导致层级冗余
+#### 趋向复杂难以维护
+- 生命周期函数混杂不相干逻辑
+- 相干逻辑分散在不同生命周期
+#### this指向
+- 内联函数过度创建新句柄
+- 类成员函数不能保证this
+
+### Hooks优势
+
+#### 优化类组件的三大问题
+- 函数组件无this问题（不牵扯实例化）
+- 自定义Hooks方便复用状态逻辑（自定义hooks可以使用hooks相关api）
+- 副作用的关注点分离
+
 ### useState
-他接收的可以是一个设置的初始值，也可以是一个回调函数：
+他接收的可以是一个设置的初始值，也可以是一个回调函数,回调函数会延迟赋值：
 ```js
 const [count, setCount] = useState(() => {
   return 0
@@ -19,9 +41,23 @@ const [count, setCount] = useState(() => {
 ```js
 setCount(x => x + 1)
 ```
-
+> useState是根据程序第一次运行的顺序返回对应的state。如果每次顺序不一致返回的结果也是混乱的。useState在初始化的时候就确定了返回值；
+可以使用eslint-plugin-react-hooks插件进行帮助我们对useState的使用规范。
+在package.json中进行配置：
+```js
+  "eslintConfig": {
+    "extends": "react-app",
+    "plugins": [
+      "react-hooks"
+    ],
+    "rules": {
+      "react-hooks/rules-of-hooks": "error"
+    }
+  },
+```
 ### useEffect
 这个api相当于react几乎所有的的声明周期函数。根据[]里面的参数，如果里面的参数改变了，useEffect就会执行。
+如果没有第二个参数，加入useEffect里面的数值发送改变就会执行
 ```js
 useEffect(() => {
   // 如果没有第二个参数，这里的代码只执行一次，相当于moubted vue的。
@@ -29,6 +65,13 @@ useEffect(() => {
     // 这里面只有组件注销的时候才会执行。。
   }
 }, [])
+useEffect(() => {
+  document.querySelector('#size').addEventListener('click', onClick, false)
+  return () => {
+    // 如果我们获取的dom元素每次会发生改变，会在不同的dom元素上绑定事件，需要在这里进行解绑，这样保证每次绑定的值是正确的。
+    document.querySelector('#size').removeEventListener('click', onClick, false)
+  }
+})
 ```
 
 ### useRef
@@ -42,6 +85,33 @@ const ref = props => {
 	return <input ref ={ ref } />
 }
 ```
+### useContext
+跟之前Context的对比：
+```js
+import React, {useState, createContext, useContext } from 'react'
+import './App.css'
+const CountContext = createContext()
+function Counter () {
+  const count = useContext(CountContext)
+  return <h1>{count}</h1>
+}
+function App() {
+  const [count, setCount] = useState(0)
+  return (
+    <div>
+       {count}
+      <button onClick={() => {setCount(count + 1)}}>+</button>
+      <CountContext.Provider value={count}>
+        <Counter></Counter>
+      </CountContext.Provider>
+    </div>
+  )
+}
+export default App
+```
+
+
+
 ## Context
 - Context
 - ContextType
@@ -251,4 +321,68 @@ class App extends React.Component {
 
 export default App
 ```
-### Memo实现运行效率问题
+
+### 项目优化
+父组件状态值改变会重新渲染子组件，可以使用shouldComponentUpdate进行优化：
+在子组件中添加判断。
+```js
+  shouldComponentUpdate(nextProps, nextState) {
+    // console.log(nextProps, nextState)
+    // 如果即将渲染的的name跟当前的一直不进行渲染
+    if (nextProps.name === this.props.name) {
+      return false
+    }
+    return true
+  }
+```
+可以使用PureComponent组件代替上面的效果，不过存在局限性，传入的props如果是一个复杂的对象，不会检测是否发生变化：
+```js
+import React, { Component, PureComponent } from 'react'
+import './App.css'
+class Foo extends PureComponent {
+  render() {
+    console.log('Foo render')
+    return null
+  }
+}
+class App extends PureComponent {
+  state = {
+    count: 0
+  }
+  render() {
+    return (
+        <div>
+          <button onClick={() => {this.setState({count: this.state.count + 1})}}>Press</button>
+          <Foo name="jiegiser"></Foo>
+        </div>
+      )
+  }
+}
+
+export default App
+```
+
+对于无状态组件，也就是函数式声明的组件，可以使用memo函数实现性能的优化：
+```js
+import React, {PureComponent, memo } from 'react'
+import './App.css'
+const Foo = memo(function Foo() {
+  console.log('Foo render')
+  return null
+})
+class App extends PureComponent {
+  state = {
+    count: 0
+  }
+  render() {
+    return (
+        <div>
+          <button onClick={() => {this.setState({count: this.state.count + 1})}}>Press</button>
+          <Foo name="jiegiser"></Foo>
+        </div>
+      )
+  }
+}
+
+export default App
+```
