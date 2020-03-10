@@ -3,12 +3,12 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:25:23
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-09 08:47:22
+ * @LastEditTime: 2020-03-10 07:52:35
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App.jsx';
+import App from './App.js';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<App />, document.getElementById('root'));
