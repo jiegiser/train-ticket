@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-11 08:36:06
+ * @LastEditTime: 2020-03-11 09:26:05
  -->
 
 ## react hooks
@@ -29,6 +29,63 @@
 - 函数组件无this问题（不牵扯实例化）
 - 自定义Hooks方便复用状态逻辑（自定义hooks可以使用hooks相关api）
 - 副作用的关注点分离
+
+### hooks 常见的问题
+#### 对传统react编程的影响
+- 声明周期函数如何映射到hooks？
+```js
+function App() {
+  useEffect(() => {
+    //componentDidMount
+    return () => {
+      // componentWillMount
+    }
+  }, [])
+  let renderCounter = useRef(0)
+  renderCounter.current++
+
+  useEffect(() => {
+    if (renderCounter > 1) {
+      // componentDidUpdate
+    }
+  })
+}
+
+```
+- 类实例成员变量如何映射到hooks上？
+```js
+class App() {
+  it = 0
+}
+function App() {
+  // useRef也可以传入一个初始值参数
+  const it = useRef(0)
+}
+```
+- Hooks中如何获取历史props和state
+```js
+function Counter() {
+  const [count, setCount] = useState(0)
+  // 通过ref来保存上一次的count的值
+  const prevCountRef = useRef()
+  useEffect(() => {
+    prevCountRef.current = count
+  })
+  const prevCount = prevCountRef.current
+  return <h1></h1>
+}
+```
+- 如何强制更新一个hooks组件
+```js
+function Counter() {
+  const [updater, setUpdater] = useState(0)
+  // 组件内部更新数值，会间接更新组件
+  function forceUpdate() {
+    setUpdater(updater => updater + 1)
+  }
+  return <h1></h1>
+}
+```
 
 ### useState
 他接收的可以是一个设置的初始值，也可以是一个回调函数,回调函数会延迟赋值：
