@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-10 20:09:27
+ * @LastEditTime: 2020-03-11 08:36:06
  -->
 
 ## react hooks
@@ -75,6 +75,10 @@ useEffect(() => {
 ```
 
 ### useRef
+
+- 获取子组件或者DOM节点的句柄
+- 渲染周期之间共享数据的存储
+
 用法：
 ```js
 const ref = props => {
@@ -85,6 +89,143 @@ const ref = props => {
 	return <input ref ={ ref } />
 }
 ```
+其他应用场景：调用子组件的方法
+```js
+import React, {useState, useMemo, useRef, useCallback} from 'react'
+import './App.css'
+class Counter extends React.Component {
+  speak() {
+    console.log(`now counter is: ${this.props.count}`)
+  }
+  render() {
+    return <h1 onClick={this.props.onClick}>{this.props.count}</h1>
+  }
+}
+function App() {
+  const counterRef = useRef()
+  const [count, setCount] = useState(0)
+  const double = useMemo(() => {
+    return count * 2
+  }, [count === 3])
+  const onClick = useCallback(() => {
+    console.log('click')
+    // 这里注意我们需要使用current属性来获取到值
+    // 注意这里如果需要获取子组件的dom，子组件需要是类组件的声明格式
+    console.log(counterRef.current)
+    // 调用子组件的方法、
+    counterRef.current.speak()
+  }, [counterRef])
+  return (
+    <div>
+       {count}---double： {double}
+      <button onClick={() => {setCount(count + 1)}}>+</button>
+        <Counter ref={counterRef} count={count} onClick={onClick}></Counter>
+    </div>
+  )
+}
+export default App
+```
+另一个应用场景：如果在组件中需要访问上一次渲染的数据甚至是state。可以使用useref进行保存
+```js
+import React, {useState, useMemo, useRef, useCallback, useEffect} from 'react'
+import './App.css'
+class Counter extends React.Component {
+  speak() {
+    console.log(`now counter is: ${this.props.count}`)
+  }
+  render() {
+    return <h1 onClick={this.props.onClick}>{this.props.count}</h1>
+  }
+}
+function App() {
+  const counterRef = useRef()
+  const [count, setCount] = useState(0)
+  let it
+  const double = useMemo(() => {
+    return count * 2
+  }, [count === 3])
+  const onClick = useCallback(() => {
+    console.log('click')
+    // 这里注意我们需要使用current属性来获取到值
+    // 注意这里如果需要获取子组件的dom，子组件需要是类组件的声明格式
+    console.log(counterRef.current)
+    // 调用子组件的方法、
+    counterRef.current.speak()
+  }, [counterRef])
+  // 只执行一次
+  useEffect(() => {
+    setInterval(() => {
+      it = setCount(count => count + 1)
+    }, 1000)
+  }, [])
+  // 每次都执行
+  useEffect(() => {
+    if (count >= 10) {
+      // 这里不能直接清除，因为每次函数进行渲染，it都是不一样的
+      clearInterval(it)
+    }
+  })
+  return (
+    <div>
+       {count}---double： {double}
+      <button onClick={() => {setCount(count + 1)}}>+</button>
+        <Counter ref={counterRef} count={count} onClick={onClick}></Counter>
+    </div>
+  )
+}
+export default App
+```
+修改后：
+```js
+import React, {useState, useMemo, useRef, useCallback, useEffect} from 'react'
+import './App.css'
+class Counter extends React.Component {
+  speak() {
+    console.log(`now counter is: ${this.props.count}`)
+  }
+  render() {
+    return <h1 onClick={this.props.onClick}>{this.props.count}</h1>
+  }
+}
+function App() {
+  const counterRef = useRef()
+  const [count, setCount] = useState(0)
+  let it = useRef()
+  const double = useMemo(() => {
+    return count * 2
+  }, [count === 3])
+  const onClick = useCallback(() => {
+    console.log('click')
+    // 这里注意我们需要使用current属性来获取到值
+    // 注意这里如果需要获取子组件的dom，子组件需要是类组件的声明格式
+    console.log(counterRef.current)
+    // 调用子组件的方法、
+    counterRef.current.speak()
+  }, [counterRef])
+  // 只执行一次
+  useEffect(() => {
+    setInterval(() => {
+      it.current = setCount(count => count + 1)
+    }, 1000)
+  }, [])
+  // 每次都执行
+  useEffect(() => {
+    if (count >= 10) {
+      // 这里不能直接清除，因为每次函数进行渲染，it都是不一样的
+      clearInterval(it.current)
+    }
+  })
+  return (
+    <div>
+       {count}---double： {double}
+      <button onClick={() => {setCount(count + 1)}}>+</button>
+        <Counter ref={counterRef} count={count} onClick={onClick}></Counter>
+    </div>
+  )
+}
+export default App
+```
+
 ### useContext
 跟之前Context的对比：
 ```js
@@ -110,7 +251,132 @@ function App() {
 export default App
 ```
 
+### useMemo、useCallback
 
+这两个API经常用来优化组件渲染，监听历来的值的变化，来决定是否重新对子组件渲染：
+```js
+import React, {useState, useMemo, useCallback} from 'react'
+import './App.css'
+function Counter (props) {
+  return <h1 onClick={props.onClick}>{props.count}</h1>
+}
+function App() {
+  const [count, setCount] = useState(0)
+  // 第二个参数是依赖的变量组成的数组，如果第二个参数不传入，useMemo的逻辑每次都会运行
+  // 如果传入空数组就只会运行一次, 他与useEffect区别就是，在useEffect之前运行；并且他可以返回jsx进行渲染页面
+  // 只有count变化，double才会重新计算---类似vue的watch函数
+  const double = useMemo(() => {
+    return count * 2
+  }, [count === 3])
+  // useMemo可以依赖另一个memo
+  const half = useMemo(() => {
+    return double / 4
+  }, [double])
+  // const onClick = () => {
+  //   console.log('Click')
+  // }
+  // 保证句柄一致，子元素点击时候，函数没有发生变化，子元素被渲染
+  // const onClick = useMemo(() => {
+  //   return () => {
+  //     console.log('Click')
+  //   }
+  // }, [])
+  // 上面的写法可以写成下面的：如果useMemo(() => fn) <===> useCallback(fn)
+  const onClick = useCallback(() => {
+    console.log('Click')
+    // 第二个参数是useCallback依赖的两个变量
+  }, [])
+  return (
+    <div>
+       {count}---double： {double}
+       half: {half}
+      <button onClick={() => {setCount(count + 1)}}>+</button>
+        <Counter count={count} onClick={onClick}></Counter>
+    </div>
+  )
+}
+export default App
+```
+
+### 自定义hooks
+hooks可以返回jsx参与渲染：
+```js
+import React, {useState, useRef, useEffect} from 'react'
+import './App.css'
+function useCounter(count) {
+  return <h1>{count}</h1>
+}
+function useCount(defaultCount) {
+  const [count, setCount] = useState(defaultCount)
+  let it = useRef()
+  // 只执行一次
+  useEffect(() => {
+    setInterval(() => {
+      it.current = setCount(count => count + 1)
+    }, 1000)
+  }, [])
+  // 每次都执行
+  useEffect(() => {
+    if (count >= 10) {
+      // 这里不能直接清除，因为每次函数进行渲染，it都是不一样的
+      clearInterval(it.current)
+    }
+  })
+  return [count, setCount]
+}
+function App() {
+  const [count, setCount] = useCount(0)
+  const Counter = useCounter(count)
+  return (
+    <div>
+      <button onClick={() => {setCount(count + 1)}}>+</button>
+        {Counter}
+    </div>
+  )
+}
+export default App
+```
+另一个例子，加入项目中有很多地方需要获取窗口的大小；通过自定义hooks获取窗口尺寸:
+
+两个组件分享了useSize的逻辑
+```js
+import React, {useState, useRef, useEffect, useCallback} from 'react'
+import './App.css'
+function useCounter(count) {
+  const size = useSize()
+  return <h1>{size.width} -- {size.height}--{count}</h1>
+}
+function useSize() {
+  const [size, setSize] = useState({
+    width: document.documentElement.clientWidth,
+    height: document.documentElement.clientHeight
+  })
+  const onResize = useCallback(() => {
+    setSize({
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight
+    })
+  }, [])
+  useEffect(() => {
+    window.addEventListener('resize', onResize, false)
+    return () => [
+      window.removeEventListener('resize', onResize, false)
+    ]
+  }, [])
+  return size
+}
+function App() {
+  const Counter = useCounter(count)
+  const size = useSize()
+  return (
+    <div>
+      {size.width} -- {size.height}
+        {Counter}
+    </div>
+  )
+}
+export default App
+```
 
 ## Context
 - Context
@@ -386,3 +652,4 @@ class App extends PureComponent {
 
 export default App
 ```
+useMemo以及useCallback是经常用来优化项目的，监听依赖的变量，阻止在子元素中每次都进行渲染。
