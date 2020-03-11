@@ -3,62 +3,126 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:25:23
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-11 08:38:53
+ * @LastEditTime: 2020-03-11 19:07:29
  */
-import React, {useState, useRef, useEffect, useCallback} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import './App.css'
-function useCounter(count) {
-  const size = useSize()
-  return <h1>{size.width} -- {size.height}--{count}</h1>
-}
-function useSize() {
-  const [size, setSize] = useState({
-    width: document.documentElement.clientWidth,
-    height: document.documentElement.clientHeight
-  })
-  const onResize = useCallback(() => {
-    setSize({
-      width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight
-    })
-  }, [])
-  useEffect(() => {
-    window.addEventListener('resize', onResize, false)
-    return () => [
-      window.removeEventListener('resize', onResize, false)
-    ]
-  }, [])
-  return size
-}
-
-function useCount(defaultCount) {
-  const [count, setCount] = useState(defaultCount)
-  let it = useRef()
-  // 只执行一次
-  useEffect(() => {
-    setInterval(() => {
-      it.current = setCount(count => count + 1)
-    }, 1000)
-  }, [])
-  // 每次都执行
-  useEffect(() => {
-    if (count >= 10) {
-      // 这里不能直接清除，因为每次函数进行渲染，it都是不一样的
-      clearInterval(it.current)
+let idSeq = Date.now()
+function Control(props) {
+  const { addTodo } = props
+  const inputRef = useRef()
+  const onSubmit = (e) => {
+    e.preventDefault()
+    const newText = inputRef.current.value.trim()
+    if (newText.length === 0) {
+      return
     }
-  })
-  return [count, setCount]
-}
-function App() {
-  const [count, setCount] = useCount(0)
-  const Counter = useCounter(count)
-  const size = useSize()
+    addTodo({
+      id: ++idSeq,
+      text: newText,
+      complete: false
+    })
+    inputRef.current.value = ''
+  }
   return (
-    <div>
-      {size.width} -- {size.height}
-      <button onClick={() => {setCount(count + 1)}}>+</button>
-        {Counter}
+    <div className="control">
+      <h1>
+        todos
+      </h1>
+      <form onSubmit={onSubmit}>
+        <input
+          type="text"
+          ref={inputRef}
+          className="new-todo"
+          placeholder="what needs to be done?"
+        />
+      </form>
     </div>
   )
 }
-export default App
+
+function TodoItem(props) {
+  const {todo: {
+    id,
+    text,
+    complete
+  }, toggleTodo, removeTodos} = props
+  const onChange = () => {
+    toggleTodo(id)
+  }
+  const onRemove = () => {
+    removeTodos(id)
+  }
+  return (
+    <li className="todo-item">
+      <input
+        type="checkbox"
+        onChange={onChange}
+        checked={complete}
+      />
+      <label className={complete ? 'complete' : ''}>{text}</label>
+      <button onClick={onRemove}>&#xd7;</button>
+    </li>
+  )
+}
+
+
+function Todos(props) {
+  const {todos, toggleTodo, removeTodos} = props
+  return (
+    <ul>
+      {
+        todos.map(todo => {
+          return (
+            <TodoItem
+              key={todo.id}
+              todo={todo}
+              toggleTodo={toggleTodo}
+              removeTodos={removeTodos}
+            />
+          )
+        })
+      }
+    </ul>
+  )
+}
+
+const LS_KEY = 'todo'
+
+function TodoList() {
+  const [todos, setTodos] = useState([])
+  const addTodo = (todo) => {
+    setTodos(todos => [...todos, todo])
+  }
+  const removeTodos = (id) => {
+    setTodos(todos => todos.filter(todo => {
+      return todo.id !== id
+    }))
+  }
+  const toggleTodo = (id) => {
+    setTodos(todos => todos.map(todo => {
+      return todo.id === id ? {
+        ...todo,
+        complete: !todo.complete
+      }:todo
+    }))
+  }
+  // 注意hooks函数是有顺序的
+  // 程序初始化调用，只执行一次
+  useEffect(() => {
+    const todo = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+    console.log(todo, 'todoGet')
+    setTodos(todo)
+  }, [])
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(todos))
+    console.log(todos, 'todoSet')
+  }, [todos])
+  return (
+    <div className="todo-list">
+      <Control addTodo={addTodo}></Control>
+      <Todos removeTodos={removeTodos} toggleTodo={toggleTodo} todos={todos}></Todos>
+    </div>
+  )
+}
+export default TodoList
