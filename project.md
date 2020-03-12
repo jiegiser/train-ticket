@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-12 12:47:10
+ * @LastEditTime: 2020-03-12 15:14:04
  -->
 
 ## react hooks
@@ -1625,3 +1625,42 @@ export function createToggle(payload) {
   }
 }
 ```
+
+### pwa
+
+- Service Worker
+- Promise
+- fetch
+- cache API
+- Notification API
+
+#### Service Worker
+
+服务工作线程
+- 常驻内存运行
+- 代理网络请求
+- 依赖HTTPS
+
+他是pwa最基础的部分。
+
+#### Promise
+
+承诺控制流
+- 优化回调地狱
+- async/await语法同步化
+- service worker的API风格
+
+#### Fetch
+网络请求
+- 比XMLHttpRequest更简洁
+- Promise风格
+- 依旧存在不足
+#### cache API
+支持资源的缓存系统
+- 缓存资源（css/script/image）
+- 依赖service worker代理网络请求
+- 支持离线程序运行
+#### Notification API
+消息推送
+- 依赖用户授权
+- 适合在service worker中推送

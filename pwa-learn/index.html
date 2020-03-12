@@ -1,0 +1,68 @@
+<!--
+ * @Descripttion: 
+ * @Author: jiegiser
+ * @Date: 2020-03-12 15:15:55
+ * @LastEditors: jiegiser
+ * @LastEditTime: 2020-03-12 16:23:16
+ -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>learn pwa</title>
+  <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+  hello pwa
+  <script>
+    // serviceWorker单例对象
+    // 第一个参数'./sw.js'.,注册的server worker的脚本
+    // scope，这个脚本可以控制的页面的相对中心，控制所有页面
+    navigator.serviceWorker.register('./sw.js', {
+      scope: '/'
+    }).then(registration => {
+      console.log(registration)
+    }).catch(e => {
+      console.error(e)
+    })
+  </script>
+  <script>
+    // const xhr = new XMLHttpRequest()
+    // xhr.responseType = 'json'
+    // xhr.onreadystatechange = () => {
+    //   if (xhr.readyState === 4) {
+    //     if (xhr.status >= 200 && xhr.status < 300) {
+    //       console.log(xhr.response)
+    //     }
+    //   }
+    // }
+    // xhr.open('GET', '/uerinfo.json', true)
+    // xhr.send(null)
+
+
+    // fetch('/uerinfo.json', {
+    //   method: 'GET',
+    //   // body
+    //   // headers: new Headers()
+    //   // credentials: 'include' --cookie凭证
+    // }).then(respon => respon.json()).then(info => {
+    //   console.log(info)
+    // })
+
+
+    // const req = new Request('/uerinfo.json', {
+    //   method: 'GET',
+    //   // body
+    //   // headers: new Headers()
+    //   // credentials: 'include' --cookie凭证说
+    // })
+    // fetch(req).then(respon => respon.json()).then(info => {
+    //   console.log(info)
+    // })
+  </script>
+</body>
+
+</html>
