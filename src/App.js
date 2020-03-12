@@ -3,11 +3,30 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:25:23
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-11 19:07:29
+ * @LastEditTime: 2020-03-12 12:43:22
  */
 import React, {useState, useRef, useEffect} from 'react'
+import {
+  createAdd,
+  createRemove,
+  createSet,
+  createToggle
+} from './actionCreators'
+import reducer from './reducer'
 import './App.css'
-let idSeq = Date.now()
+// 封装一个函数用来分发action。
+function bindActionCreators(actionCreators, dispatch) {
+  const ret = {}
+  for(let key in actionCreators) {
+    ret[key] = function(...args) {
+      const actionCreator = actionCreators[key]
+      const action = actionCreator(...args)
+      dispatch(action)
+    }
+  }
+  return ret
+}
+
 function Control(props) {
   const { addTodo } = props
   const inputRef = useRef()
@@ -17,11 +36,12 @@ function Control(props) {
     if (newText.length === 0) {
       return
     }
-    addTodo({
-      id: ++idSeq,
-      text: newText,
-      complete: false
-    })
+    // addTodo({
+    //   id: ++idSeq,
+    //   text: newText,
+    //   complete: false
+    // })
+    addTodo(newText)
     inputRef.current.value = ''
   }
   return (
@@ -46,12 +66,12 @@ function TodoItem(props) {
     id,
     text,
     complete
-  }, toggleTodo, removeTodos} = props
+  }, dispatch} = props
   const onChange = () => {
-    toggleTodo(id)
+    dispatch(createToggle(id))
   }
   const onRemove = () => {
-    removeTodos(id)
+    dispatch(createRemove(id))
   }
   return (
     <li className="todo-item">
@@ -68,7 +88,7 @@ function TodoItem(props) {
 
 
 function Todos(props) {
-  const {todos, toggleTodo, removeTodos} = props
+  const {todos, dispatch} = props
   return (
     <ul>
       {
@@ -77,8 +97,7 @@ function Todos(props) {
             <TodoItem
               key={todo.id}
               todo={todo}
-              toggleTodo={toggleTodo}
-              removeTodos={removeTodos}
+              dispatch={dispatch}
             />
           )
         })
@@ -88,40 +107,66 @@ function Todos(props) {
 }
 
 const LS_KEY = 'todo'
-
+let store = {
+  todos: [],
+  incrementCount: 0
+}
 function TodoList() {
   const [todos, setTodos] = useState([])
-  const addTodo = (todo) => {
-    setTodos(todos => [...todos, todo])
+  const [incrementCount, setIncrementCount] = useState(0)
+  useEffect(() => {
+    Object.assign(store, {
+      todos,
+      incrementCount
+    })
+  }, [todos, incrementCount])
+  // 使用dispatch以及action管理数据
+  const dispatch = (action) => {
+    const setters = {
+      todos: setTodos,
+      incrementCount: setIncrementCount
+    }
+    if('function' === typeof action) {
+      action(dispatch, () => store)
+      return
+    }
+    const newState = reducer(store, action)
+    for(let key in newState) {
+      setters[key](newState[key])
+    }
   }
-  const removeTodos = (id) => {
-    setTodos(todos => todos.filter(todo => {
-      return todo.id !== id
-    }))
-  }
-  const toggleTodo = (id) => {
-    setTodos(todos => todos.map(todo => {
-      return todo.id === id ? {
-        ...todo,
-        complete: !todo.complete
-      }:todo
-    }))
-  }
+
   // 注意hooks函数是有顺序的
   // 程序初始化调用，只执行一次
   useEffect(() => {
-    const todo = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
-    console.log(todo, 'todoGet')
-    setTodos(todo)
+    const todos = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+    console.log(todos, 'todoGet')
+    // setTodos(todos)
+    dispatch(createSet(todos))
   }, [])
+  // 只要todos变化就执行，监听todos
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify(todos))
     console.log(todos, 'todoSet')
   }, [todos])
+
   return (
     <div className="todo-list">
-      <Control addTodo={addTodo}></Control>
-      <Todos removeTodos={removeTodos} toggleTodo={toggleTodo} todos={todos}></Todos>
+      <Control 
+        {
+          ...bindActionCreators({
+            addTodo: createAdd
+          }, dispatch)
+        }
+      ></Control>
+      <Todos
+      // {
+      //   ...bindActionCreators({
+      //     removeTodo: createRemove,
+      //     toggleTodo: createToggle
+      //   }, dispatch)
+      // }
+      dispatch={dispatch} todos={todos}></Todos>
     </div>
   )
 }

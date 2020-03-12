@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-11 09:26:05
+ * @LastEditTime: 2020-03-12 12:47:10
  -->
 
 ## react hooks
@@ -710,3 +710,918 @@ class App extends PureComponent {
 export default App
 ```
 useMemo以及useCallback是经常用来优化项目的，监听依赖的变量，阻止在子元素中每次都进行渲染。
+
+使用dispatch以及action以及hooks实现一个简单的todilist：
+```js
+import React, {useState, useRef, useEffect, useCallback} from 'react'
+import './App.css'
+let idSeq = Date.now()
+function Control(props) {
+  const { dispatch } = props
+  const inputRef = useRef()
+  const onSubmit = (e) => {
+    e.preventDefault()
+    const newText = inputRef.current.value.trim()
+    if (newText.length === 0) {
+      return
+    }
+    dispatch({
+      type: 'add',
+      payload: {
+        id: ++idSeq,
+        text: newText,
+        complete: false
+      }
+    })
+    inputRef.current.value = ''
+  }
+  return (
+    <div className="control">
+      <h1>
+        todos
+      </h1>
+      <form onSubmit={onSubmit}>
+        <input
+          type="text"
+          ref={inputRef}
+          className="new-todo"
+          placeholder="what needs to be done?"
+        />
+      </form>
+    </div>
+  )
+}
+
+function TodoItem(props) {
+  const {todo: {
+    id,
+    text,
+    complete
+  }, dispatch} = props
+  const onChange = () => {
+    dispatch({
+      type: 'toggle',
+      payload: id
+    })
+  }
+  const onRemove = () => {
+    dispatch({
+      type: 'remove',
+      payload: id
+    })
+  }
+  return (
+    <li className="todo-item">
+      <input
+        type="checkbox"
+        onChange={onChange}
+        checked={complete}
+      />
+      <label className={complete ? 'complete' : ''}>{text}</label>
+      <button onClick={onRemove}>&#xd7;</button>
+    </li>
+  )
+}
+
+
+function Todos(props) {
+  const {todos, dispatch} = props
+  return (
+    <ul>
+      {
+        todos.map(todo => {
+          return (
+            <TodoItem
+              key={todo.id}
+              todo={todo}
+              dispatch={dispatch}
+            />
+          )
+        })
+      }
+    </ul>
+  )
+}
+
+const LS_KEY = 'todo'
+
+function TodoList() {
+  const [todos, setTodos] = useState([])
+  // const addTodo = (todo) => {
+  //   setTodos(todos => [...todos, todo])
+  // }
+  // const removeTodos = (id) => {
+  //   setTodos(todos => todos.filter(todo => {
+  //     return todo.id !== id
+  //   }))
+  // }
+  // const toggleTodo = (id) => {
+  //   setTodos(todos => todos.map(todo => {
+  //     return todo.id === id ? {
+  //       ...todo,
+  //       complete: !todo.complete
+  //     }:todo
+  //   }))
+  // }
+  // 使用dispatch以及action管理数据
+  const dispatch = useCallback((action) => {
+    const {type, payload} = action
+    switch(type) {
+      case 'set':
+        setTodos(payload)
+        break
+      case 'add':
+        setTodos(todos => [...todos, payload])
+        break
+      case 'remove':
+        setTodos(todos => todos.filter(todo => {
+          return todo.id !== payload
+        }))
+        break
+      case 'toggle':
+        setTodos(todos => todos.map(todo => {
+          return todo.id === payload ? {
+            ...todo,
+            complete: !todo.complete
+          }:todo
+        }))
+        break
+      default:
+    }
+  }, [])
+
+  // 注意hooks函数是有顺序的
+  // 程序初始化调用，只执行一次
+  useEffect(() => {
+    const todos = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+    console.log(todos, 'todoGet')
+    // setTodos(todos)
+    dispatch({
+      type: 'set',
+      payload: todos
+    })
+  }, [])
+  // 只要todos变化就执行，监听todos
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(todos))
+    console.log(todos, 'todoSet')
+  }, [todos])
+
+  return (
+    <div className="todo-list">
+      <Control dispatch={dispatch}></Control>
+      <Todos dispatch={dispatch} todos={todos}></Todos>
+    </div>
+  )
+}
+export default TodoList
+```
+样式部分：
+```css
+.todo-list {
+  width: 550px;
+  margin: 300px auto;
+  background: #fff;
+  box-shadow: 0 2px 4px 0 rgb(0, 0, 0, 0.2), 0 25px 50px 0 rgba(0, 0, 0, 0.1);
+}
+.control h1 {
+  width: 100%;
+  font-size: 100px;
+  text-align: center;
+  margin: 0;
+  color: rgba(175, 47, 47, 0.15);
+}
+.control .new-todo {
+  padding: 16px 16px 16px 60px;
+  border: 0;
+  outline: none;
+  font-size: 24px;
+  box-sizing: border-box;
+  width: 100%;
+  box-shadow: inset 0 -2px 1px rgba(0, 0, 0, 0.3);
+}
+.todos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.todo-item {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+}
+.todo-item label {
+  flex: 1;
+  padding: 15px 15px 15px 0;
+  line-height: 1.2;
+  display: block;
+}
+.todo-item label.complete {
+  text-decoration: line-through;
+}
+.todo-item button {
+  border: 0;
+  outline: 0;
+  display: block;
+  width: 40px;
+  text-align: center;
+  font-size: 30px;
+  color: #cc9a9a;
+}
+```
+对于action每次都需要进行构建，可以新建一个actionCreators.js文件，进行构建action，actionCreators。
+```js
+import React, {useState, useRef, useEffect} from 'react'
+import {
+  createAdd,
+  createRemove,
+  createSet,
+  createToggle
+} from './actionCreators'
+import './App.css'
+let idSeq = Date.now()
+
+// 封装一个函数用来分发action。
+function bindActionCreators(actionCreators, dispatch) {
+  const ret = {}
+  for(let key in actionCreators) {
+    ret[key] = function(...args) {
+      const actionCreator = actionCreators[key]
+      const action = actionCreator(...args)
+      dispatch(action)
+    }
+  }
+  return ret
+}
+
+function Control(props) {
+  const { addTodo } = props
+  const inputRef = useRef()
+  const onSubmit = (e) => {
+    e.preventDefault()
+    const newText = inputRef.current.value.trim()
+    if (newText.length === 0) {
+      return
+    }
+    addTodo({
+      id: ++idSeq,
+      text: newText,
+      complete: false
+    })
+    inputRef.current.value = ''
+  }
+  return (
+    <div className="control">
+      <h1>
+        todos
+      </h1>
+      <form onSubmit={onSubmit}>
+        <input
+          type="text"
+          ref={inputRef}
+          className="new-todo"
+          placeholder="what needs to be done?"
+        />
+      </form>
+    </div>
+  )
+}
+
+function TodoItem(props) {
+  const {todo: {
+    id,
+    text,
+    complete
+  }, dispatch} = props
+  const onChange = () => {
+    dispatch(createToggle(id))
+  }
+  const onRemove = () => {
+    dispatch(createRemove(id))
+  }
+  return (
+    <li className="todo-item">
+      <input
+        type="checkbox"
+        onChange={onChange}
+        checked={complete}
+      />
+      <label className={complete ? 'complete' : ''}>{text}</label>
+      <button onClick={onRemove}>&#xd7;</button>
+    </li>
+  )
+}
+
+
+function Todos(props) {
+  const {todos, dispatch} = props
+  return (
+    <ul>
+      {
+        todos.map(todo => {
+          return (
+            <TodoItem
+              key={todo.id}
+              todo={todo}
+              dispatch={dispatch}
+            />
+          )
+        })
+      }
+    </ul>
+  )
+}
+
+const LS_KEY = 'todo'
+
+function TodoList() {
+  const [todos, setTodos] = useState([])
+  // 使用dispatch以及action管理数据
+  const dispatch = (action) => {
+    const {type, payload} = action
+    switch(type) {
+      case 'set':
+        setTodos(payload)
+        break
+      case 'add':
+        setTodos(todos => [...todos, payload])
+        break
+      case 'remove':
+        setTodos(todos => todos.filter(todo => {
+          return todo.id !== payload
+        }))
+        break
+      case 'toggle':
+        setTodos(todos => todos.map(todo => {
+          return todo.id === payload ? {
+            ...todo,
+            complete: !todo.complete
+          }:todo
+        }))
+        break
+      default:
+    }
+  }
+
+  // 注意hooks函数是有顺序的
+  // 程序初始化调用，只执行一次
+  useEffect(() => {
+    const todos = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+    console.log(todos, 'todoGet')
+    // setTodos(todos)
+    dispatch(createSet(todos))
+  }, [])
+  // 只要todos变化就执行，监听todos
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(todos))
+    console.log(todos, 'todoSet')
+  }, [todos])
+
+  return (
+    <div className="todo-list">
+      <Control 
+        {
+          ...bindActionCreators({
+            addTodo: createAdd
+          }, dispatch)
+        }
+      ></Control>
+      <Todos
+      // {
+      //   ...bindActionCreators({
+      //     removeTodo: createRemove,
+      //     toggleTodo: createToggle
+      //   }, dispatch)
+      // }
+      dispatch={dispatch} todos={todos}></Todos>
+    </div>
+  )
+}
+export default TodoList
+// actionCreators.js
+export function createSet(payload) {
+  return {
+    type: 'set',
+    payload
+  }
+}
+export function createAdd(payload) {
+  return {
+    type: 'add',
+    payload
+  }
+}
+export function createRemove(payload) {
+  return {
+    type: 'remove',
+    payload
+  }
+}
+export function createToggle(payload) {
+  return {
+    type: 'toggle',
+    payload
+  }
+}
+```
+使用reducer来管理数据，以及使用combineReducers合并多个reducer：
+```js
+import React, {useState, useRef, useEffect} from 'react'
+import {
+  createAdd,
+  createRemove,
+  createSet,
+  createToggle
+} from './actionCreators'
+import './App.css'
+let idSeq = Date.now()
+
+// 将多个reducer合并为一个总的reducers
+function combineReducers(reducers) {
+  return function reducer(state, action) {
+    const change = {}
+    for (let key in reducers) {
+      change[key] = reducers[key](state[key], action)
+    }
+    return {
+      ...state,
+      ...change
+    }
+  }
+}
+
+// 封装一个函数用来分发action。
+function bindActionCreators(actionCreators, dispatch) {
+  const ret = {}
+  for(let key in actionCreators) {
+    ret[key] = function(...args) {
+      const actionCreator = actionCreators[key]
+      const action = actionCreator(...args)
+      dispatch(action)
+    }
+  }
+  return ret
+}
+
+function Control(props) {
+  const { addTodo } = props
+  const inputRef = useRef()
+  const onSubmit = (e) => {
+    e.preventDefault()
+    const newText = inputRef.current.value.trim()
+    if (newText.length === 0) {
+      return
+    }
+    addTodo({
+      id: ++idSeq,
+      text: newText,
+      complete: false
+    })
+    inputRef.current.value = ''
+  }
+  return (
+    <div className="control">
+      <h1>
+        todos
+      </h1>
+      <form onSubmit={onSubmit}>
+        <input
+          type="text"
+          ref={inputRef}
+          className="new-todo"
+          placeholder="what needs to be done?"
+        />
+      </form>
+    </div>
+  )
+}
+
+function TodoItem(props) {
+  const {todo: {
+    id,
+    text,
+    complete
+  }, dispatch} = props
+  const onChange = () => {
+    dispatch(createToggle(id))
+  }
+  const onRemove = () => {
+    dispatch(createRemove(id))
+  }
+  return (
+    <li className="todo-item">
+      <input
+        type="checkbox"
+        onChange={onChange}
+        checked={complete}
+      />
+      <label className={complete ? 'complete' : ''}>{text}</label>
+      <button onClick={onRemove}>&#xd7;</button>
+    </li>
+  )
+}
+
+
+function Todos(props) {
+  const {todos, dispatch} = props
+  return (
+    <ul>
+      {
+        todos.map(todo => {
+          return (
+            <TodoItem
+              key={todo.id}
+              todo={todo}
+              dispatch={dispatch}
+            />
+          )
+        })
+      }
+    </ul>
+  )
+}
+
+const LS_KEY = 'todo'
+
+function TodoList() {
+  const [todos, setTodos] = useState([])
+  const [incrementCount, setIncrementCount] = useState(0)
+
+  // 对reducer进行拆分：
+  const reducers = {
+    todos(state, action) {
+      const {type, payload} = action
+      switch(type) {
+        case 'set':
+          return payload
+        case 'add':
+          return [...state, payload]
+        case 'remove':
+          return state.filter(todo => {
+            return todo.id !== payload
+          })
+        case 'toggle':
+          return state.map(todo => {
+            return todo.id === payload ? {
+              ...todo,
+              complete: !todo.complete
+            }:todo
+          })
+      }
+      return state
+    },
+    incrementCount(state, action) {
+      const {type} = action
+      switch(type) {
+        case 'add':
+        case 'set':
+          return state + 1
+      }
+      return state
+    }
+  }
+  const reducer = combineReducers(reducers)
+  // function reducer(state, action) {
+  //   const {type, payload} = action
+  //   const { todos, incrementCount } = state
+  //   switch(type) {
+  //     case 'set':
+  //       return {
+  //         ...state,
+  //         todos: payload,
+  //         incrementCount: incrementCount + 1
+  //       }
+  //     case 'add':
+  //       return {
+  //         ...state,
+  //         todos: [...todos, payload],
+  //         incrementCount: incrementCount + 1
+  //       }
+  //     case 'remove':
+  //       return {
+  //         ...state,
+  //         todos: todos.filter(todo => {
+  //           return todo.id !== payload
+  //         })
+  //       }
+  //     case 'toggle':
+  //       return {
+  //         ...state,
+  //         todos: todos.map(todo => {
+  //           return todo.id === payload ? {
+  //             ...todo,
+  //             complete: !todo.complete
+  //           }:todo
+  //         })
+  //       }
+  //   }
+  //   return state
+  // }
+
+
+  // 使用dispatch以及action管理数据
+  const dispatch = (action) => {
+    const state = {
+      todos,
+      incrementCount
+    }
+    const setters = {
+      todos: setTodos,
+      incrementCount: setIncrementCount
+    }
+    const newState = reducer(state, action)
+    for(let key in newState) {
+      setters[key](newState[key])
+    }
+  }
+
+  // 注意hooks函数是有顺序的
+  // 程序初始化调用，只执行一次
+  useEffect(() => {
+    const todos = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+    console.log(todos, 'todoGet')
+    // setTodos(todos)
+    dispatch(createSet(todos))
+  }, [])
+  // 只要todos变化就执行，监听todos
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(todos))
+    console.log(todos, 'todoSet')
+  }, [todos])
+
+  return (
+    <div className="todo-list">
+      <Control 
+        {
+          ...bindActionCreators({
+            addTodo: createAdd
+          }, dispatch)
+        }
+      ></Control>
+      <Todos
+      // {
+      //   ...bindActionCreators({
+      //     removeTodo: createRemove,
+      //     toggleTodo: createToggle
+      //   }, dispatch)
+      // }
+      dispatch={dispatch} todos={todos}></Todos>
+    </div>
+  )
+}
+export default TodoList
+```
+如果我们处理的action是异步操作，可以这样：
+```js
+import React, {useState, useRef, useEffect} from 'react'
+import {
+  createAdd,
+  createRemove,
+  createSet,
+  createToggle
+} from './actionCreators'
+import reducer from './reducer'
+import './App.css'
+// 封装一个函数用来分发action。
+function bindActionCreators(actionCreators, dispatch) {
+  const ret = {}
+  for(let key in actionCreators) {
+    ret[key] = function(...args) {
+      const actionCreator = actionCreators[key]
+      const action = actionCreator(...args)
+      dispatch(action)
+    }
+  }
+  return ret
+}
+
+function Control(props) {
+  const { addTodo } = props
+  const inputRef = useRef()
+  const onSubmit = (e) => {
+    e.preventDefault()
+    const newText = inputRef.current.value.trim()
+    if (newText.length === 0) {
+      return
+    }
+    // addTodo({
+    //   id: ++idSeq,
+    //   text: newText,
+    //   complete: false
+    // })
+    addTodo(newText)
+    inputRef.current.value = ''
+  }
+  return (
+    <div className="control">
+      <h1>
+        todos
+      </h1>
+      <form onSubmit={onSubmit}>
+        <input
+          type="text"
+          ref={inputRef}
+          className="new-todo"
+          placeholder="what needs to be done?"
+        />
+      </form>
+    </div>
+  )
+}
+
+function TodoItem(props) {
+  const {todo: {
+    id,
+    text,
+    complete
+  }, dispatch} = props
+  const onChange = () => {
+    dispatch(createToggle(id))
+  }
+  const onRemove = () => {
+    dispatch(createRemove(id))
+  }
+  return (
+    <li className="todo-item">
+      <input
+        type="checkbox"
+        onChange={onChange}
+        checked={complete}
+      />
+      <label className={complete ? 'complete' : ''}>{text}</label>
+      <button onClick={onRemove}>&#xd7;</button>
+    </li>
+  )
+}
+
+
+function Todos(props) {
+  const {todos, dispatch} = props
+  return (
+    <ul>
+      {
+        todos.map(todo => {
+          return (
+            <TodoItem
+              key={todo.id}
+              todo={todo}
+              dispatch={dispatch}
+            />
+          )
+        })
+      }
+    </ul>
+  )
+}
+
+const LS_KEY = 'todo'
+let store = {
+  todos: [],
+  incrementCount: 0
+}
+function TodoList() {
+  const [todos, setTodos] = useState([])
+  const [incrementCount, setIncrementCount] = useState(0)
+  useEffect(() => {
+    Object.assign(store, {
+      todos,
+      incrementCount
+    })
+  }, [todos, incrementCount])
+  // 使用dispatch以及action管理数据
+  const dispatch = (action) => {
+    const setters = {
+      todos: setTodos,
+      incrementCount: setIncrementCount
+    }
+    if('function' === typeof action) {
+      action(dispatch, () => store)
+      return
+    }
+    const newState = reducer(store, action)
+    for(let key in newState) {
+      setters[key](newState[key])
+    }
+  }
+
+  // 注意hooks函数是有顺序的
+  // 程序初始化调用，只执行一次
+  useEffect(() => {
+    const todos = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+    console.log(todos, 'todoGet')
+    // setTodos(todos)
+    dispatch(createSet(todos))
+  }, [])
+  // 只要todos变化就执行，监听todos
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(todos))
+    console.log(todos, 'todoSet')
+  }, [todos])
+
+  return (
+    <div className="todo-list">
+      <Control 
+        {
+          ...bindActionCreators({
+            addTodo: createAdd
+          }, dispatch)
+        }
+      ></Control>
+      <Todos
+      // {
+      //   ...bindActionCreators({
+      //     removeTodo: createRemove,
+      //     toggleTodo: createToggle
+      //   }, dispatch)
+      // }
+      dispatch={dispatch} todos={todos}></Todos>
+    </div>
+  )
+}
+export default TodoList
+// reducer.js
+  const reducers = {
+    todos(state, action) {
+      const {type, payload} = action
+      switch(type) {
+        case 'set':
+          return payload
+        case 'add':
+          return [...state, payload]
+        case 'remove':
+          return state.filter(todo => {
+            return todo.id !== payload
+          })
+        case 'toggle':
+          return state.map(todo => {
+            return todo.id === payload ? {
+              ...todo,
+              complete: !todo.complete
+            }:todo
+          })
+      }
+      return state
+    },
+    incrementCount(state, action) {
+      const {type} = action
+      switch(type) {
+        case 'add':
+        case 'set':
+          return state + 1
+      }
+      return state
+    }
+  }
+  // 将多个reducer合并为一个总的reducers
+function combineReducers(reducers) {
+  return function reducer(state, action) {
+    const change = {}
+    for (let key in reducers) {
+      change[key] = reducers[key](state[key], action)
+    }
+    return {
+      ...state,
+      ...change
+    }
+  }
+}
+export default combineReducers(reducers)
+// actionCreators.js
+export function createSet(payload) {
+  return {
+    type: 'set',
+    payload
+  }
+}
+let idSeq = Date.now()
+export function createAdd(text) {
+  return (dispatch, getSate) => {
+    const { todos } = getSate()
+    if(!todos.find(todo => todo.text === text)) {
+      dispatch({
+        type: 'add',
+        payload: {
+          id: ++idSeq,
+          text,
+          complete: false
+        }
+      })
+    }
+  }
+}
+export function createRemove(payload) {
+  return {
+    type: 'remove',
+    payload
+  }
+}
+export function createToggle(payload) {
+  return {
+    type: 'toggle',
+    payload
+  }
+}
+```
