@@ -1,3 +1,10 @@
+/*
+ * @Descripttion: 
+ * @Author: jiegiser
+ * @Date: 2020-03-09 08:46:05
+ * @LastEditors: jiegiser
+ * @LastEditTime: 2020-03-12 19:38:46
+ */
 'use strict';
 
 const path = require('path');
@@ -55,7 +62,17 @@ module.exports = {
   appBuild: resolveApp('build'),
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
-  appIndexJs: resolveModule(resolveApp, 'src/index'),
+  // 新增四个
+  appQueryHtml: resolveApp('public/query.html'),
+  appTicketHtml: resolveApp('public/ticket.html'),
+  appOrderHtml: resolveApp('public/order.html'),
+  // 入口文件
+  appIndexJs: resolveModule(resolveApp, 'src/index/index'),
+  // 新增四个
+  appQueryJs: resolveModule(resolveApp, 'src/query/index'),
+  appTicketJs: resolveModule(resolveApp, 'src/ticket/index'),
+  appOrderJs: resolveModule(resolveApp, 'src/order/index'),
+  
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
   appTsConfig: resolveApp('tsconfig.json'),
