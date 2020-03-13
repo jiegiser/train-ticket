@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-12 20:18:34
+ * @LastEditTime: 2020-03-13 08:50:07
  -->
 
 ## react hooks
@@ -1827,3 +1827,5 @@ module.exports = {
         // },
       }),
 ```
+
+项目中使用prop-types来校验组件传值的格式是否正确，安装：npm i prop-types --save
