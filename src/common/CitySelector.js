@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-13 15:00:34
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-14 10:45:07
+ * @LastEditTime: 2020-03-14 10:47:12
  */
 import React, {
   useState,
@@ -153,7 +153,6 @@ const Suggest = memo(function Suggest(props) {
     searchKey,
     onSelect
   } = props
-  console.log(searchKey, onSelect)
   const [result, setResult] = useState([])
   useEffect(() => {
     fetch('/rest/search?key=' + encodeURIComponent(searchKey))

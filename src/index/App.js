@@ -3,28 +3,33 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-14 09:21:34
+ * @LastEditTime: 2020-03-14 15:55:55
  */
 import React, { useCallback, useMemo } from 'react'
 import {connect} from 'react-redux'
 import { bindActionCreators } from 'redux'
 import './App.css'
 
-import Header from '../common/Header.js';
-import DepartDate from './DepartDate.js';
-import HighSpeed from './HighSpeed.js';
-import Journey from './Journey.js';
-import Submit from './Submit.js';
+import Header from '../common/Header.js'
+import DepartDate from './DepartDate.js'
+import HighSpeed from './HighSpeed.js'
+import Journey from './Journey.js'
+import Submit from './Submit.js'
 
-import CitySelector from '../common/CitySelector.js';
+import CitySelector from '../common/CitySelector.js'
+import DateSelector from '../common/DateSelector'
 
 import {
   exchangeFromTo,
   showCitySelector,
   hideCitySelector,
   fetchCityData,
-  setSelectedCity
+  setSelectedCity,
+  showDateSelector,
+  hideDateSelector,
+  setDepartDate
 } from './actions'
+import { h0 } from '../common/fp'
 function App(props) {
   const {
     from,
@@ -56,6 +61,28 @@ function App(props) {
       onSelect: setSelectedCity,
     }, dispatch)
   }, [])
+
+  const departDateCbs = useMemo(() => {
+    return bindActionCreators({
+      onClick: showDateSelector
+    }, dispatch)
+  })
+  const dateSelectorCbs = useMemo(() => {
+    return bindActionCreators({
+      onBack: hideDateSelector
+    }, dispatch)
+  })
+
+  const onSelectDate = useCallback((day) => {
+    if(!day) {
+      return
+    }
+    if(day < h0()) {
+      return
+    }
+    dispatch(setDepartDate(day))
+    dispatch(hideDateSelector())
+  })
   return (
     <div>
       <div className="header-wrapper">
@@ -69,7 +96,12 @@ function App(props) {
             ...cbs
           }
         />
-        <DepartDate/>
+        <DepartDate
+          time={departDate}
+          {
+            ...departDateCbs
+          }
+        />
         <HighSpeed/>
         <Submit/>
       </form>
@@ -78,6 +110,13 @@ function App(props) {
         cityData={ cityData }
         isLoading={ isLoadingCityData }
         {...citySelectorCbs}
+      />
+      <DateSelector
+        show={isDateSelectorVisible}
+        {
+          ...dateSelectorCbs
+        }
+        onSelect={onSelectDate}
       />
     </div>
   )

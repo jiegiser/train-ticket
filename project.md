@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-13 15:17:28
+ * @LastEditTime: 2020-03-14 11:27:12
  -->
 
 ## react hooks
@@ -1853,3 +1853,5 @@ import classnames from 'classnames'
       
     </div>
 ```
+
+项目中使用dayjs来方便数据时间数据，安装：npm install dayjs --save
