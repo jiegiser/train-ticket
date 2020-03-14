@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-14 15:55:55
+ * @LastEditTime: 2020-03-14 16:15:47
  */
 import React, { useCallback, useMemo } from 'react'
 import {connect} from 'react-redux'
@@ -27,7 +27,8 @@ import {
   setSelectedCity,
   showDateSelector,
   hideDateSelector,
-  setDepartDate
+  setDepartDate,
+  toggleHighSpeed
 } from './actions'
 import { h0 } from '../common/fp'
 function App(props) {
@@ -66,13 +67,18 @@ function App(props) {
     return bindActionCreators({
       onClick: showDateSelector
     }, dispatch)
-  })
+  }, [])
   const dateSelectorCbs = useMemo(() => {
     return bindActionCreators({
       onBack: hideDateSelector
     }, dispatch)
-  })
+  }, [])
 
+  const highSpeedCbs = useMemo(() => {
+    return bindActionCreators({
+      toggle: toggleHighSpeed
+    }, dispatch)
+  }, [])
   const onSelectDate = useCallback((day) => {
     if(!day) {
       return
@@ -102,7 +108,12 @@ function App(props) {
             ...departDateCbs
           }
         />
-        <HighSpeed/>
+        <HighSpeed
+          highSpeed={highSpeed}
+          {
+            ...highSpeedCbs
+          }
+        />
         <Submit/>
       </form>
       <CitySelector
