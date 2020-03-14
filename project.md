@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-14 17:08:33
+ * @LastEditTime: 2020-03-14 17:42:27
  -->
 
 ## react hooks
@@ -1862,4 +1862,36 @@ import classnames from 'classnames'
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
         : isEnvDevelopment && 'static/js/[name].js',
+```
+
+项目中用到解析url中的参数的库是urijs，首先进行安装：npm i urijs --save
+使用： 
+```js
+  useEffect(() => {
+    const queries = URI.parseQuery(window.location.search)
+    const {
+      from,
+      to,
+      date,
+      hightSpeed
+    } = queries
+  }, [])
+
+  // 设置请求参数
+    const url = new URI('/rest/query')
+      .setSearch('from', from)
+      .setSearch('to', to)
+      .setSearch('date', dayjs(departDate).format('YYYY-MM-DD'))
+      .setSearch('highSpeed', highSpeed)
+      .setSearch('orderType', orderType)
+      .setSearch('onlyTickets', onlyTickets)
+      .setSearch('checkedTicketTypes', Object.keys(checkedTicketTypes).join())
+      .setSearch('checkedTrainTypes', Object.keys(checkedTrainTypes).join())
+      .setSearch('checkedDepartStations', Object.keys(checkedDepartStations).join())
+      .setSearch('checkedArriveStations', Object.keys(checkedArriveStations).join())
+      .setSearch('departTimeStart', departTimeStart)
+      .setSearch('departTimeEnd', departTimeEnd)
+      .setSearch('arriveTimeStart', arriveTimeStart)
+      .setSearch('arriveTimeEnd', arriveTimeEnd)
+      .toString()
 ```
