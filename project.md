@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-14 11:27:12
+ * @LastEditTime: 2020-03-14 17:08:33
  -->
 
 ## react hooks
@@ -1855,3 +1855,11 @@ import classnames from 'classnames'
 ```
 
 项目中使用dayjs来方便数据时间数据，安装：npm install dayjs --save
+
+如果多页面项目编译不成功，需要修改webpackconfig.js：
+```js
+// 修改输出文件的文件名：
+      filename: isEnvProduction
+        ? 'static/js/[name].[contenthash:8].js'
+        : isEnvDevelopment && 'static/js/[name].js',
+```

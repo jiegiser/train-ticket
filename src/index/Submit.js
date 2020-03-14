@@ -3,13 +3,16 @@
  * @Author: jiegiser
  * @Date: 2020-03-13 08:06:09
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-13 08:06:51
+ * @LastEditTime: 2020-03-14 16:19:11
  */
-import React from 'react'
+import React, {memo} from 'react'
+
 import './Submit.css'
 
-export default function Submit(props) {
+export default memo(function Submit(props) {
   return (
-    <div></div>
+    <div>
+      <button type="submit" className="submit-button">搜索</button>
+    </div>
   )
-}
+})

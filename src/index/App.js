@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-14 16:15:47
+ * @LastEditTime: 2020-03-14 16:20:00
  */
 import React, { useCallback, useMemo } from 'react'
 import {connect} from 'react-redux'
@@ -94,7 +94,7 @@ function App(props) {
       <div className="header-wrapper">
         <Header title="火车票" onBack={onBack} />
       </div>
-      <form className="form">
+      <form action="./query.html" className="form">
         <Journey
           from={from}
           to={to}
