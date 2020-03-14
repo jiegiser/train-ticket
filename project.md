@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-13 08:50:07
+ * @LastEditTime: 2020-03-13 15:17:28
  -->
 
 ## react hooks
@@ -1828,4 +1828,28 @@ module.exports = {
       }),
 ```
 
-项目中使用prop-types来校验组件传值的格式是否正确，安装：npm i prop-types --save
+项目中使用prop-types来校验组件传值的格式是否正确，安装：npm i prop-types --save,
+使用：
+```js
+import PropTypres from 'prop-types'
+Header.propTypes = {
+  onBack: PropTypres.func.isRequired,
+  title: PropTypres.string.isRequired
+}
+```
+在项目中会经常使用动态加载类样式的情况，(跟vue写多个类一样)如果直接写在标签上，会很不方便，
+可以使用第三方的库，安装：npm i classnames --save,使用：
+```js
+import classnames from 'classnames'
+  classnames('city-selector', {
+    hidden: !show
+  })
+  // 之前的使用方法
+    <div className={['city-selector', (!show && 'hidden')].filter(Boolean).join(' ')}>
+      
+    </div>
+  // 现在
+    <div className={  classnames('city-selector', { hidden: !show})}>
+      
+    </div>
+```

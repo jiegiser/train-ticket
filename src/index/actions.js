@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:02:02
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-13 08:27:53
+ * @LastEditTime: 2020-03-14 10:10:08
  */
 export const ACTION_SET_FROM = 'SET_FROM'
 export const ACTION_SET_TO = 'SET_TO'
@@ -118,7 +118,7 @@ export function fetchCityData() {
     if (isLoadingCityData) {
       return
     }
-    const cache = JSON.parse(localStorage.getItem('city_data_cache') || '{}');
+    const cache = JSON.parse(localStorage.getItem('city_data_cache') || '{}')
     if (Date.now() < cache.expires) {
       dispatch(setCityData(cache.data))
       return
@@ -127,7 +127,7 @@ export function fetchCityData() {
     fetch('/rest/cities?_' + Date.now())
       .then(res => res.json())
       .then(cityData => {
-        dispatch(setCityData(cityData));
+        dispatch(setCityData(cityData))
         localStorage.setItem(
           'city_data_cache',
           JSON.stringify({

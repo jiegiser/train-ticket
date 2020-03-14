@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-13 14:56:32
+ * @LastEditTime: 2020-03-14 09:21:34
  */
 import React, { useCallback, useMemo } from 'react'
 import {connect} from 'react-redux'
@@ -15,15 +15,27 @@ import DepartDate from './DepartDate.js';
 import HighSpeed from './HighSpeed.js';
 import Journey from './Journey.js';
 import Submit from './Submit.js';
+
+import CitySelector from '../common/CitySelector.js';
+
 import {
   exchangeFromTo,
-  showCitySelector
+  showCitySelector,
+  hideCitySelector,
+  fetchCityData,
+  setSelectedCity
 } from './actions'
 function App(props) {
   const {
     from,
     to,
-    dispatch
+    isCitySelectorVisible,
+    isDateSelectorVisible,
+    cityData,
+    isLoadingCityData,
+    highSpeed,
+    dispatch,
+    departDate,
   } = props
   // useCallback防止header组件重新渲染
   const onBack = useCallback(() => {
@@ -34,6 +46,14 @@ function App(props) {
     return bindActionCreators({
       exchangeFromTo,
       showCitySelector
+    }, dispatch)
+  }, [])
+
+  const citySelectorCbs = useMemo(() => {
+    return bindActionCreators({
+      onBack: hideCitySelector,
+      fetchCityData,
+      onSelect: setSelectedCity,
     }, dispatch)
   }, [])
   return (
@@ -53,6 +73,12 @@ function App(props) {
         <HighSpeed/>
         <Submit/>
       </form>
+      <CitySelector
+        show={ isCitySelectorVisible }
+        cityData={ cityData }
+        isLoading={ isLoadingCityData }
+        {...citySelectorCbs}
+      />
     </div>
   )
 }
