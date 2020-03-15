@@ -3,19 +3,38 @@
  * @Author: jiegiser
  * @Date: 2020-03-14 16:28:34
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-15 11:53:35
+ * @LastEditTime: 2020-03-15 15:55:40
  */
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback, useState, useReducer, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
 import './Bottom.css'
 import { ORDER_DEPART } from './constant'
+import Slider from './Slider'
+function checkedReducer(state, action) {
+  const { type, payload } = action
+
+  switch (type) {
+    case 'toggle':
+      const newState = { ...state }
+      if (payload in newState) {
+        delete newState[payload]
+      } else {
+        newState[payload] = true
+      }
+      return newState
+    case 'reset':
+      return {}
+    default:
+  }
+  return state
+}
 
 const Filter = memo(function Filter(props) {
   const {
     name,
     checked,
-    toggle,
+    dispatch,
     value
   } = props
   return (
@@ -23,7 +42,7 @@ const Filter = memo(function Filter(props) {
       className={classnames({
         checked
       })}
-      onClick={() => toggle(value)}
+      onClick={() => dispatch({ payload: value, type: 'toggle' })}
     >
       {name}
     </li>
@@ -33,26 +52,18 @@ Filter.propTypes = {
   name: PropTypes.string.isRequired,
   checked: PropTypes.bool.isRequired,
   value: PropTypes.string.isRequired,
-  toggle: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired
 }
 const Option = memo(function Option(props) {
   const {
     title,
     options,
-    update,
+    dispatch,
     checkedMap
   } = props
 
   // 向下级传递的函数，最好使用useCallback包裹
-  const toggle = useCallback((value) => {
-    const newCheckedMap = {...checkedMap}
-    if (value in checkedMap) {
-      delete newCheckedMap[value]
-    } else {
-      newCheckedMap[value] = true
-    }
-    update(newCheckedMap)
-  }, [checkedMap, update])
+
   return (
     <div className="option">
       <h3>{title}</h3>
@@ -63,9 +74,8 @@ const Option = memo(function Option(props) {
               <Filter
                 key={option.value}
                 {...option}
-                checked={option.value}
                 checked={option.value in checkedMap}
-                toggle={toggle}
+                dispatch={dispatch}
               />
             )
           })
@@ -78,7 +88,7 @@ Option.propTypes = {
   title: PropTypes.string.isRequired,
   options: PropTypes.array.isRequired,
   checkedMap: PropTypes.object.isRequired,
-  update: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired
 }
 
 const BottomModal = memo(function BottomModal(props) {
@@ -106,29 +116,53 @@ const BottomModal = memo(function BottomModal(props) {
     toggleIsFiltersVisible
   } = props
 
-  const [localCheckedTicketTypes, setLocalCheckedTicketTypes] = useState(() => {
-    return {
-      ...checkedTicketTypes
+  const [
+    localCheckedTicketTypes,
+    localCheckedTicketTypesDispatch,
+  ] = useReducer(
+    checkedReducer,
+    checkedTicketTypes,
+    checkedTicketTypes => {
+      return {
+        ...checkedTicketTypes,
+      }
     }
-  })
+  )
+  const [localCheckedTrainTypes, localCheckedTrainTypesDispatch] = useReducer(
+      checkedReducer,
+      checkedTrainTypes,
+      checkedTrainTypes => {
+        return {
+          ...checkedTrainTypes
+        }
+      }
+    )
 
-  const [localCheckedTrainTypes, setLocalCheckedTrainTypes] = useState(() => {
-    return {
-      ...checkedTrainTypes
-    }
-  })
+    const [
+      localCheckedDepartStations,
+      localCheckedDepartStationsDispatch,
+    ] = useReducer(
+      checkedReducer,
+      checkedDepartStations,
+      checkedDepartStations => {
+        return {
+          ...checkedDepartStations
+        }
+      }
+    )
 
-  const [localCheckedDepartStations, setLocalCheckedDepartStations] = useState(() => {
-    return {
-      ...checkedDepartStations
-    }
-  })
-
-  const [localCheckedArriveStations, setLocalCheckedArriveStations] = useState(() => {
-    return {
-      ...checkedArriveStations,
-    }
-  })
+    const [
+      localCheckedArriveStations,
+      localCheckedArriveStationsDispatch,
+    ] = useReducer(
+      checkedReducer,
+      checkedArriveStations,
+      checkedArriveStations => {
+        return {
+          ...checkedArriveStations,
+        }
+      }
+    )
 
   const [localDepartTimeStart, setLocalDepartTimeStart] = useState(departTimeStart)
   const [localDepartTimeEnd, setLocalDepartTimeEnd] = useState(departTimeEnd)
@@ -140,27 +174,74 @@ const BottomModal = memo(function BottomModal(props) {
       title: '坐席类型',
       options: ticketTypes,
       checkedMap: localCheckedTicketTypes,
-      update: setLocalCheckedTicketTypes
+      dispatch: localCheckedTicketTypesDispatch,
     },
     {
       title: '车次类型',
       options: trainTypes,
       checkedMap: localCheckedTrainTypes,
-      update: setLocalCheckedTrainTypes
+      dispatch: localCheckedTrainTypesDispatch,
     },
     {
       title: '出发车站',
       options: departStations,
       checkedMap: localCheckedDepartStations,
-      update: setLocalCheckedDepartStations
+      dispatch: localCheckedDepartStationsDispatch,
     },
     {
       title: '到达车站',
       options: arriveStations,
       checkedMap: localCheckedArriveStations,
-      update: setLocalCheckedArriveStations
-    }
+      dispatch: localCheckedArriveStationsDispatch,
+    },
   ]
+  function sure() {
+    setCheckedTicketTypes(localCheckedTicketTypes)
+    setCheckedTrainTypes(localCheckedTrainTypes)
+    setCheckedDepartStations(localCheckedDepartStations)
+    setCheckedArriveStations(localCheckedArriveStations)
+    setDepartTimeStart(localDepartTimeStart)
+    setDepartTimeEnd(localDepartTimeEnd)
+    setArriveTimeStart(localArriveTimeStart)
+    setArriveTimeEnd(localArriveTimeEnd)
+  
+    toggleIsFiltersVisible()
+  }
+  
+  const isResetDisabled = useMemo(() => {
+    return (
+      Object.keys(localCheckedTicketTypes).length === 0 &&
+      Object.keys(localCheckedTrainTypes).length === 0 &&
+      Object.keys(localCheckedDepartStations).length === 0 &&
+      Object.keys(localCheckedArriveStations).length === 0 &&
+      localDepartTimeStart === 0 &&
+      localDepartTimeEnd === 24 &&
+      localArriveTimeStart === 0 &&
+      localArriveTimeEnd === 24
+      )
+    }, [
+      localCheckedTicketTypes,
+      localCheckedTrainTypes,
+      localCheckedDepartStations,
+      localCheckedArriveStations,
+      localDepartTimeStart,
+      localDepartTimeEnd,
+      localArriveTimeStart,
+      localArriveTimeEnd,
+  ])
+  function reset() {
+    if (isResetDisabled) {
+      return
+    }
+    localCheckedTicketTypesDispatch({ type: 'reset' })
+    localCheckedTrainTypesDispatch({ type: 'reset' })
+    localCheckedDepartStationsDispatch({ type: 'reset' })
+    localCheckedArriveStationsDispatch({ type: 'reset' })
+    setLocalDepartTimeStart(0)
+    setLocalDepartTimeEnd(24)
+    setLocalArriveTimeStart(0)
+    setLocalArriveTimeEnd(24)
+  }
   return (
     // 半透明
     <div className="bottom-modal">
@@ -168,10 +249,15 @@ const BottomModal = memo(function BottomModal(props) {
         {/* 滚动部分 */}
         <div className="bottom-dialog-content">
           <div className="title">
-            <span className="reset">
+            <span className="reset"
+              className={classnames('reset', {
+                disabled: isResetDisabled,
+              })}
+              onClick={reset}
+            >
               重置
             </span>
-            <span className="ok">
+            <span className="ok" onClick={sure}>
               确定
             </span>
           </div>
@@ -179,6 +265,20 @@ const BottomModal = memo(function BottomModal(props) {
             {
               optionGroup.map(group => <Option {...group} key={group.title}/>)
             }
+            <Slider
+              title="出发时间"
+              currentStartHours={localDepartTimeStart}
+              currentEndHours={localDepartTimeEnd}
+              onStartChanged={setLocalDepartTimeStart}
+              onEndChanged={setLocalDepartTimeEnd}
+            />
+            <Slider
+              title="到达时间"
+              currentStartHours={localArriveTimeStart}
+              currentEndHours={localArriveTimeEnd}
+              onStartChanged={setLocalArriveTimeStart}
+              onEndChanged={setLocalArriveTimeEnd}
+            />
           </div>
         </div>
       </div>
@@ -242,6 +342,7 @@ export default function Bottom(props) {
     setArriveTimeStart,
     setArriveTimeEnd
   } = props
+
   return (
     <div className="bottom">
       <div className="bottom-filters">
@@ -271,7 +372,7 @@ export default function Bottom(props) {
           })}
           onClick={toggleIsFiltersVisible}>
           <i className="icon">{ '\uf0f7' }</i>
-          只看有票
+          综合筛选
         </span>
       </div>
         {
