@@ -3,9 +3,9 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-15 10:17:13
+ * @LastEditTime: 2020-03-15 10:38:41
  */
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { connect } from 'react-redux'
 import URI from 'urijs'
 import dayjs from 'dayjs'
@@ -26,13 +26,19 @@ import {
   setArriveStations,
 
   prevDate,
-  nextDate
+  nextDate,
+
+  toggleOrderType,
+  toggleHighSpeed,
+  toggleOnlyTickets,
+  toggleIsFiltersVisible,
 } from './actions'
 import Header from '../common/Header'
 import Nav from '../common/Nav'
 import List from './List'
 import Bottom from './Bottom'
 import useNav from '../common/useNav'
+import { bindActionCreators } from 'redux'
 
 
 function App(props) {
@@ -149,6 +155,14 @@ function App(props) {
     prev,
     next
   } = useNav(departDate, dispatch, prevDate, nextDate)
+  const bottomCbs = useMemo(() => {
+    return (bindActionCreators({
+      toggleOrderType,
+      toggleHighSpeed,
+      toggleOnlyTickets,
+      toggleIsFiltersVisible,
+    }, dispatch))
+  }, [])
   // 如果请求异常--不能放在最前面执行
   if(!searchParsed) {
     return null
@@ -171,7 +185,15 @@ function App(props) {
       <List
         list={trainList}
       />
-      <Bottom/>
+      <Bottom
+        highSpeed={highSpeed}
+        orderType={orderType}
+        onlyTickets={onlyTickets}
+        isFiltersVisible={isFiltersVisible}
+        {
+          ...bottomCbs
+        }
+      />
     </div>
   )
 }
