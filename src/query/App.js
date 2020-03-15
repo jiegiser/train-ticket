@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-15 11:15:40
+ * @LastEditTime: 2020-03-15 16:57:01
  */
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { connect } from 'react-redux'
@@ -96,7 +96,7 @@ function App(props) {
     if (!searchParsed) {
       return
     }
-
+    console.log(from, to)
     const url = new URI('/rest/query')
       .setSearch('from', from)
       .setSearch('to', to)

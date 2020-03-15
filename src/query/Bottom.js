@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-14 16:28:34
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-15 15:55:40
+ * @LastEditTime: 2020-03-15 16:49:05
  */
 import React, { memo, useCallback, useState, useReducer, useMemo } from 'react'
 import PropTypes from 'prop-types'
@@ -342,7 +342,28 @@ export default function Bottom(props) {
     setArriveTimeStart,
     setArriveTimeEnd
   } = props
-
+  // 检测是否有筛选数据
+  const noChecked = useMemo(() => {
+    return (
+      Object.keys(checkedTicketTypes).length === 0 &&
+      Object.keys(checkedTrainTypes).length === 0 &&
+      Object.keys(checkedDepartStations).length === 0 &&
+      Object.keys(checkedArriveStations).length === 0 &&
+      departTimeStart === 0 &&
+      departTimeEnd === 24 &&
+      arriveTimeStart === 0 &&
+      arriveTimeEnd === 24
+    )
+  }, [
+    checkedTicketTypes,
+    checkedTrainTypes,
+    checkedDepartStations,
+    checkedArriveStations,
+    departTimeStart,
+    departTimeEnd,
+    arriveTimeStart,
+    arriveTimeEnd
+  ])
   return (
     <div className="bottom">
       <div className="bottom-filters">
@@ -368,10 +389,10 @@ export default function Bottom(props) {
         </span>
         <span
           className={classnames('item', {
-            'item-on': isFiltersVisible
+            'item-on': isFiltersVisible || !noChecked
           })}
           onClick={toggleIsFiltersVisible}>
-          <i className="icon">{ '\uf0f7' }</i>
+          <i className="icon">{noChecked ? '\uf0f7' : '\uf446'}</i>
           综合筛选
         </span>
       </div>
