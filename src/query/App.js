@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-14 17:48:01
+ * @LastEditTime: 2020-03-15 10:17:13
  */
 import React, { useCallback, useEffect } from 'react'
 import { connect } from 'react-redux'
@@ -24,11 +24,15 @@ import {
   setTrainTypes,
   setDepartStations,
   setArriveStations,
+
+  prevDate,
+  nextDate
 } from './actions'
 import Header from '../common/Header'
 import Nav from '../common/Nav'
 import List from './List'
 import Bottom from './Bottom'
+import useNav from '../common/useNav'
 
 
 function App(props) {
@@ -138,7 +142,14 @@ function App(props) {
   const onBack = useCallback(() => {
     window.history.back()
   }, [])
-  // 如果请求异常
+  // 使用自定义的hooks函数
+  const {
+    isPrevDisabled,
+    isNextDisabled,
+    prev,
+    next
+  } = useNav(departDate, dispatch, prevDate, nextDate)
+  // 如果请求异常--不能放在最前面执行
   if(!searchParsed) {
     return null
   }
@@ -150,8 +161,16 @@ function App(props) {
           onBack={onBack}
         />
       </div>
-      <Nav/>
-      <List/>
+      <Nav
+        date={departDate}
+        prev={prev}
+        next={next}
+        isNextDisabled={isNextDisabled}
+        isPrevDisabled={isPrevDisabled}
+      />
+      <List
+        list={trainList}
+      />
       <Bottom/>
     </div>
   )
