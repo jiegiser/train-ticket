@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-15 10:38:41
+ * @LastEditTime: 2020-03-15 11:15:40
  */
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { connect } from 'react-redux'
@@ -32,6 +32,15 @@ import {
   toggleHighSpeed,
   toggleOnlyTickets,
   toggleIsFiltersVisible,
+
+  setCheckedTicketTypes,
+  setCheckedTrainTypes,
+  setCheckedDepartStations,
+  setCheckedArriveStations,
+  setDepartTimeStart,
+  setDepartTimeEnd,
+  setArriveTimeStart,
+  setArriveTimeEnd
 } from './actions'
 import Header from '../common/Header'
 import Nav from '../common/Nav'
@@ -161,6 +170,14 @@ function App(props) {
       toggleHighSpeed,
       toggleOnlyTickets,
       toggleIsFiltersVisible,
+      setCheckedTicketTypes,
+      setCheckedTrainTypes,
+      setCheckedDepartStations,
+      setCheckedArriveStations,
+      setDepartTimeStart,
+      setDepartTimeEnd,
+      setArriveTimeStart,
+      setArriveTimeEnd
     }, dispatch))
   }, [])
   // 如果请求异常--不能放在最前面执行
@@ -190,6 +207,18 @@ function App(props) {
         orderType={orderType}
         onlyTickets={onlyTickets}
         isFiltersVisible={isFiltersVisible}
+        ticketTypes={ticketTypes}
+        trainTypes={trainTypes}
+        departStations={departStations}
+        arriveStations={arriveStations}
+        checkedTicketTypes={checkedTicketTypes}
+        checkedTrainTypes={checkedTrainTypes}
+        checkedDepartStations={checkedDepartStations}
+        checkedArriveStations={checkedArriveStations}
+        departTimeStart={departTimeStart}
+        departTimeEnd={departTimeEnd}
+        arriveTimeStart={arriveTimeStart}
+        arriveTimeEnd={arriveTimeEnd}
         {
           ...bottomCbs
         }
