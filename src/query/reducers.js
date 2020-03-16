@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:45
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-15 15:04:41
+ * @LastEditTime: 2020-03-16 07:50:27
  */
 import {
   ACTION_SET_FROM,
@@ -217,7 +217,6 @@ export default {
     return state
   },
   isFiltersVisible(state = false, action) {
-    console.log(state, action)
     const { type, payload } = action
     switch(type) {
       case ACTION_SET_IS_FILTERS_VISIBLE:

@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-14 16:27:47
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-15 10:26:57
+ * @LastEditTime: 2020-03-16 09:00:09
  */
 import React, {
   memo,
@@ -40,7 +40,6 @@ const ListItem = memo(function ListItem(props) {
     trainNumber,
     date
   ])
-
   return (
     <li className="list-item">
       <a href={url}>
