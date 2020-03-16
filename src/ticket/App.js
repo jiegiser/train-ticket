@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-16 19:20:59
+ * @LastEditTime: 2020-03-17 07:55:06
  */
 import React, {
   useEffect,
@@ -21,6 +21,7 @@ import Header from '../common/Header'
 import Nav from '../common/Nav'
 import Detail from '../common/Detail'
 import Candidate from './Candidate'
+import { TrainContext } from './context'
 import './App.css'
 
 import {
@@ -153,6 +154,18 @@ function App(props) {
             }
           />
         </div>
+        <TrainContext.Provider value={
+          {
+            trainNumber,
+            departStation,
+            arriveStation,
+            departDate
+          }
+        }>
+          <Candidate
+            tickets={tickets}
+          />
+        </TrainContext.Provider>
         {
           isScheduleVisible && (
             <div className="mask" onClick={() => {dispatch(toggleIsScheduleVisible())}}>
