@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-14 17:42:27
+ * @LastEditTime: 2020-03-16 19:35:39
  -->
 
 ## react hooks
@@ -1894,4 +1894,22 @@ import classnames from 'classnames'
       .setSearch('arriveTimeStart', arriveTimeStart)
       .setSearch('arriveTimeEnd', arriveTimeEnd)
       .toString()
+```
+异步加载组件：
+```js
+// 异步加载组件
+const Schedule = lazy(() => import('./Schedule'))
+
+<Suspense fallback={<div>loading</div>}>
+    <Schedule
+      date={departDate}
+      trainNumber={trainNumber}
+      departStation={departStation}
+      arriveStation={arriveStation}
+    />
+</Suspense>
+```
+工具库leftPad，left-pad可以在数字或者字符串前面格式化，比如下面在每个数字前端补一个零：
+```js
+leftPad(index, 2, 0)
 ```

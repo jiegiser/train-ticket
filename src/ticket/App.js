@@ -3,11 +3,14 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-16 08:57:58
+ * @LastEditTime: 2020-03-16 19:20:59
  */
 import React, {
   useEffect,
-  useCallback
+  useCallback,
+  useMemo,
+  lazy,
+  Suspense
 } from 'react'
 import {connect} from 'react-redux'
 import URI from 'urijs';
@@ -35,6 +38,9 @@ import {
   setTickets,
   toggleIsScheduleVisible
 } from './actions'
+import { bindActionCreators } from 'redux'
+// 异步加载组件
+const Schedule = lazy(() => import('./Schedule'))
 function App(props) {
   const {
     departDate,
@@ -74,12 +80,44 @@ function App(props) {
   useEffect(() => {
     document.title = trainNumber
   }, [trainNumber])
+  useEffect(() => {
+    if (!searchParsed) {
+      return
+    }
+    const url = new URI('/rest/ticket')
+      .setQuery('date', dayjs(departDate).format('YYYY-MM-DD'))
+      .setSearch('trainNumber', trainNumber)
+      .toString()
+    fetch(url)
+      .then(response => response.json())
+      .then(result => {
+      const { detail, candidates } = result
+      const {
+          departTimeStr,
+          arriveTimeStr,
+          arriveDate,
+          durationStr
+      } = detail
+      dispatch(setDepartTimeStr(departTimeStr))
+      dispatch(setArriveTimeStr(arriveTimeStr))
+      dispatch(setArriveDate(arriveDate))
+      dispatch(setDurationStr(durationStr))
+      dispatch(setTickets(candidates))
+    })
+  }, [searchParsed, departDate, trainNumber])
   const {
     isPrevDisabled,
     isNextDisabled,
     prev,
     next
   } = useNav(departDate, dispatch, prevDate, nextDate)
+
+  const detailCbs = useMemo(() => {
+    return bindActionCreators({
+      toggleIsScheduleVisible
+    }, dispatch)
+  }, [])
+
   // 如果没有解析完成不进行渲染页面
   if(!searchParsed) {
     return null
@@ -100,6 +138,35 @@ function App(props) {
           prev={prev}
           next={next}
         />
+        <div className="detail-wrapper">
+          <Detail
+            departDate={departDate}
+            arriveDate={arriveDate}
+            departTimeStr={departTimeStr}
+            arriveTimeStr={arriveTimeStr}
+            trainNumber={trainNumber}
+            departStation={departStation}
+            arriveStation={arriveStation}
+            durationStr={durationStr}
+            {
+              ...detailCbs
+            }
+          />
+        </div>
+        {
+          isScheduleVisible && (
+            <div className="mask" onClick={() => {dispatch(toggleIsScheduleVisible())}}>
+              <Suspense fallback={<div>loading</div>}>
+                  <Schedule
+                    date={departDate}
+                    trainNumber={trainNumber}
+                    departStation={departStation}
+                    arriveStation={arriveStation}
+                  />
+              </Suspense>
+            </div>
+          )
+        }
       </div>
     </div>
   )
