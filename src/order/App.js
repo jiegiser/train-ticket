@@ -3,15 +3,17 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-17 09:49:48
+ * @LastEditTime: 2020-03-17 20:13:41
  */
 import React, {
   useCallback,
-  useEffect
+  useEffect,
+  useMemo
 } from 'react'
 import URI from 'urijs'
 import dayjs from 'dayjs'
 import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
 import './App.css'
 import Header from '../common/Header'
 import Detail from '../common/Detail'
@@ -78,7 +80,6 @@ function App(props) {
     dispatch(setDepartDate(dayjs(date).valueOf()))
     dispatch(setSearchParsed(true))
   }, [])
-
   useEffect(() => {
     if(!searchParsed) {
       return
@@ -97,7 +98,28 @@ function App(props) {
     seatType,
     departDate
   ])
-
+  const passengersCbs = useMemo(() => {
+    return bindActionCreators(
+      {
+        createAdult,
+        createChild,
+        removePassenger,
+        updatePassenger,
+        showGenderMenu,
+        showFollowAdultMenu,
+        showTicketTypeMenu,
+      },
+      dispatch
+    )
+  }, [])
+  const menuCbs = useMemo(() => {
+    return bindActionCreators(
+      {
+        hideMenu
+      },
+      dispatch
+    )
+  }, [])
   if(!searchParsed) {
     return null
   }
@@ -125,6 +147,17 @@ function App(props) {
             className="train-icon"
           ></span>
         </Detail>
+        <Ticket price={price} type={seatType} />
+        <Passengers passengers={passengers} {...passengersCbs} />
+        <Menu
+          show={isMenuVisible}
+          {
+            ...menu
+          }
+          {
+            ...menuCbs
+          }
+        />
       </div>
     </div>
   )
