@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-16 19:35:39
+ * @LastEditTime: 2020-03-17 08:03:58
  -->
 
 ## react hooks
@@ -1912,4 +1912,76 @@ const Schedule = lazy(() => import('./Schedule'))
 工具库leftPad，left-pad可以在数字或者字符串前面格式化，比如下面在每个数字前端补一个零：
 ```js
 leftPad(index, 2, 0)
+```
+
+useContext的使用场景，比如我们在一个层级很深的子组件中需要获取store中的数据，那样一步步传值下去很是麻烦，可以使用context一步进行获取，
+```js
+import { TrainContext } from './context'
+<TrainContext.Provider value={
+  {
+    trainNumber,
+    departStation,
+    arriveStation,
+    departDate
+  }
+}>
+  <Candidate
+    tickets={tickets}
+  />
+</TrainContext.Provider>
+
+// './context'
+import { createContext } from 'react'
+export const TrainContext = createContext()
+
+// 在子组件中进行获取
+
+import { TrainContext } from './context'
+
+const Channel = memo(function Channel(props) {
+  const {
+    trainNumber,
+    departStation,
+    arriveStation,
+    departDate,
+  } = useContext(TrainContext)
+
+  return (
+    <div className="channel">
+    </div>
+  )
+})
+
+const Seat = memo(function Seat(props) {
+  return (
+    <li>
+      <div
+        className="channels"
+        style={{ height: expanded ? channels.length * 55 + 'px' : 0 }}>
+        {
+          channels.map(channel => {
+            return (
+              <Channel key={channel.name} {...channel} type={type} />
+            )
+          })
+        }
+      </div>
+    </li>
+  )
+})
+
+const Candidate = memo(function Candidate(props) {
+  return (
+    <div className="candidate">
+      <ul>
+        {
+          tickets.map((ticket, idx) => {
+            return <Seat idx={idx} onToggle={onToggle} expanded={expandedIndex === idx} {...ticket} key={ticket.type}/>
+          })
+        }
+      </ul>
+    </div>
+  )
+})
+export default Candidate
 ```

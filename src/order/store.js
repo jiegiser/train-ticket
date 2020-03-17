@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:02:13
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-12 19:31:30
+ * @LastEditTime: 2020-03-17 08:10:24
  */
 import {
   createStore,
@@ -17,15 +17,20 @@ import thunk from 'redux-thunk'
 export default createStore(
   combineReducers(reducers),
   {
-    from: '北京',
-    to: '上海',
-    isCitySelectorVisible: false,
-    currentSelectingLeftCity: false,
-    cityData: null,
-    isLoadingCityData: false,
-    isDateSelectorVisible: false,
+    trainNumber: null,
+    departStation: null,
+    arriveStation: null,
+    seatType: null,
     departDate: Date.now(),
-    highSpeed: false,
+    arriveDate: Date.now(),
+    departTimeStr: null,
+    arriveTimeStr: null,
+    durationStr: null,
+    price: null,
+    passengers: [], // 乘客信息
+    menu: null, // 弹出菜单
+    isMenuVisible: false,
+    searchParsed: false
   },
   applyMiddleware(thunk)
 )
