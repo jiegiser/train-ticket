@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-17 07:55:06
+ * @LastEditTime: 2020-03-17 09:54:51
  */
 import React, {
   useEffect,
@@ -149,10 +149,11 @@ function App(props) {
             departStation={departStation}
             arriveStation={arriveStation}
             durationStr={durationStr}
-            {
-              ...detailCbs
-            }
-          />
+          >
+            <span className="left"></span>
+            <span className="schedule" onClick={() => detailCbs.toggleIsScheduleVisible()}>时刻表</span>
+            <span className="right"></span>
+          </Detail>
         </div>
         <TrainContext.Provider value={
           {

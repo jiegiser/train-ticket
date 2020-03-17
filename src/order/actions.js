@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:02:02
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-17 08:11:02
+ * @LastEditTime: 2020-03-17 09:43:35
  */
 export const ACTION_SET_TRAIN_NUMBER = 'SET_TRAIN_NUMBER';
 export const ACTION_SET_DEPART_STATION = 'SET_DEPART_STATION';
@@ -106,28 +106,28 @@ export function setSearchParsed(searchParsed) {
 }
 
 export function fetchInitial(url) {
-    return (dispatch, getState) => {
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                const {
-                    departTimeStr,
-                    arriveTimeStr,
-                    arriveDate,
-                    durationStr,
-                    price,
-                } = data;
-
-                dispatch(setDepartTimeStr(departTimeStr));
-                dispatch(setArriveTimeStr(arriveTimeStr));
-                dispatch(setArriveDate(arriveDate));
-                dispatch(setDurationStr(durationStr));
-                dispatch(setPrice(price));
-            });
-    };
+  return (dispatch, getState) => {
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const {
+          departTimeStr,
+          arriveTimeStr,
+          arriveDate,
+          durationStr,
+          price
+        } = data
+        dispatch(setDepartTimeStr(departTimeStr))
+        dispatch(setArriveTimeStr(arriveTimeStr))
+        dispatch(setArriveDate(arriveDate))
+        dispatch(setDurationStr(durationStr))
+        dispatch(setPrice(price))
+      }
+    )
+  }
 }
 
-let passengerIdSeed = 0;
+let passengerIdSeed = 0
 
 export function createAdult() {
     return (dispatch, getState) => {

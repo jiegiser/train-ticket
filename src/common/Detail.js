@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-16 08:12:38
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-16 19:13:03
+ * @LastEditTime: 2020-03-17 09:55:40
  */
 import React, { memo, useMemo } from 'react'
 import PropTypes from 'prop-types'
@@ -26,8 +26,7 @@ const Detail = memo(function Detail(props) {
     trainNumber,
     departStation,
     arriveStation,
-    durationStr,
-    toggleIsScheduleVisible
+    durationStr
   } = props
   // 出发日期跟到达日期的字符串表示
   const departDateStr = useMemo(() => format(departDate), [departDate])
@@ -43,9 +42,12 @@ const Detail = memo(function Detail(props) {
         <div className="middle">
           <p className="train-name">{trainNumber}</p>
           <p className="train-mid">
-            <span className="left"></span>
+            {/* <span className="left"></span>
             <span className="schedule" onClick={() => {toggleIsScheduleVisible()}}>时刻表</span>
-            <span className="right"></span>
+            <span className="right"></span> */}
+            {
+              props.children
+            }
           </p>
           <p className="train-time">耗时{durationStr}</p>
         </div>

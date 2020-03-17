@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-17 08:03:58
+ * @LastEditTime: 2020-03-17 09:52:55
  -->
 
 ## react hooks
@@ -1984,4 +1984,33 @@ const Candidate = memo(function Candidate(props) {
   )
 })
 export default Candidate
+```
+
+react中类似vue的组件插槽的用法：
+```js
+<Detail
+  departDate={departDate}
+  arriveDate={arriveDate}
+  departTimeStr={departTimeStr}
+  arriveTimeStr={arriveTimeStr}
+  trainNumber={trainNumber}
+  departStation={departStation}
+  arriveStation={arriveStation}
+  durationStr={durationStr}
+>
+  <span
+    style={{ display: 'block' }}
+    className="train-icon"
+  ></span>
+</Detail>
+
+ // 在detail子组件中：
+ <p className="train-mid">
+  {/* <span className="left"></span>
+  <span className="schedule" onClick={() => {toggleIsScheduleVisible()}}>时刻表</span>
+  <span className="right"></span> */}
+  {
+    props.children
+  }
+</p>
 ```
