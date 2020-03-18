@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-17 09:52:55
+ * @LastEditTime: 2020-03-18 08:48:28
  -->
 
 ## react hooks
@@ -2013,4 +2013,22 @@ react中类似vue的组件插槽的用法：
     props.children
   }
 </p>
+```
+
+使用husky、lint-staged工具进行git提交格式化代码，安装：npm i husky lint-staged，进行配置：
+```json
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{css,md}": [
+      "git add"
+    ]
+  },
 ```

@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-12 19:01:12
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-18 07:58:22
+ * @LastEditTime: 2020-03-18 08:16:06
  */
 import React, {
   useCallback,
@@ -160,6 +160,10 @@ function App(props) {
             {...chooseCbs}
           />
         }
+        <Account
+          length={passengers.length}
+          price={price}
+        />
         <Menu
           show={isMenuVisible}
           {
