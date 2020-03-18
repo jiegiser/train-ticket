@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-17 08:18:39
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-17 19:50:21
+ * @LastEditTime: 2020-03-18 07:52:58
  */
 
 import React, {
@@ -150,6 +150,8 @@ const Passengers = memo(function Passengers(props) {
     showFollowAdultMenu,
     showTicketTypeMenu
   } = props
+
+  // 循环遍历所有同行成人，保存他的id以及姓名，便于显示
   const nameMap = useMemo(() => {
     const ret = {}
     for (const passenger of passengers) {
