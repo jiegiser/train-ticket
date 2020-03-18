@@ -3,7 +3,7 @@
  * @Author: jiegiser
  * @Date: 2020-03-09 08:53:22
  * @LastEditors: jiegiser
- * @LastEditTime: 2020-03-18 08:48:28
+ * @LastEditTime: 2020-03-18 09:25:11
  -->
 
 ## react hooks
@@ -2031,4 +2031,36 @@ react中类似vue的组件插槽的用法：
       "git add"
     ]
   },
+```
+
+使用webpack-bundle-analyzer插件来进行打包分析，首先进行安装：npm i webpack-bundle-analyzer 
+使用，在webpack.config.js中进行配置：在进行打包的时候不会产生打包分析，
+```js
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+plugins: [
+  process.env.GENERATE_BUNDLE_ANALYZER === 'true' && new BundleAnalyzerPlugin({
+    openAnalyzer: false, // 是否打开8888服务器
+    analyzerMode: 'static' // 只生成静态html文件
+  }),
+]
+```
+
+配置静态资源文件的引入地址，需要修改webpack.config.js中的publicPath，如下：
+```js
+// output选项中的
+            publicPath:
+                'production' !== process.env.NODE_ENV ||
+                'true' === process.env.USE_LOCAL_FILES
+                    ? '/'
+                    : 'https://www.cdn.com/',
+```
+
+配置service worker，首先在index.js文件中如引入：
+```js
+import * as serviceWorker from '../serviceWorker'
+if ('production' === process.env.NODE_ENV) {
+  serviceWorker.register()
+} else {
+  serviceWorker.unregister()
+}
 ```

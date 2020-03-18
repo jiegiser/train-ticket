@@ -28,7 +28,7 @@ const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
 const postcssNormalize = require('postcss-normalize');
 
 const appPackageJson = require(paths.appPackageJson);
-
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 // Some apps do not need the benefits of saving a web request, so not inlining the chunk
@@ -512,6 +512,10 @@ module.exports = function(webpackEnv) {
       ],
     },
     plugins: [
+      process.env.GENERATE_BUNDLE_ANALYZER === 'true' && new BundleAnalyzerPlugin({
+        openAnalyzer: false, // 是否打开8888服务器
+        analyzerMode: 'static' // 只生成静态html文件
+      }),
       // Generates an `index.html` file with the <script> injected.
       new HtmlWebpackPlugin(
         Object.assign(
